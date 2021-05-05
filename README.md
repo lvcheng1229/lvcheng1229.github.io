@@ -1,5 +1,6 @@
 ## Blog List
-[Alan Zucconi(Unity)](https://www.alanzucconi.com/tutorials/)  
+[Alan Zucconi(Unity)](https://www.alanzucconi.com/tutorials/)    
+Fast Subsurface Scattering in Unity (Part 1)  
 
 [Posts about real time GI](http://rasmusbarr.github.io/allposts.html)  
 
@@ -44,8 +45,21 @@ Global Illumination Using Voxel Cone Tracing
 [maister](https://themaister.net/blog/)
 
 [INTERPLAY OF LIGHT](https://interplayoflight.wordpress.com/)  
-Shader汇编代码阅读
-PORTING GPU DRIVEN OCCLUSION CULLING TO BGFX
+Shader汇编代码阅读  
+PORTING GPU DRIVEN OCCLUSION CULLING TO BGFX  
+TO Z-PREPASS OR NOT TO Z-PREPASS  
+WHAT IS SHADER OCCUPANCY AND WHY DO WE CARE ABOUT IT?  
+ADDING SUPPORT FOR TWO-LEVEL ACCELERATION FOR RAYTRACING  
+USING EMBREE GENERATED BVH TREES FOR GPU RAYTRACING  
+A SURVEY OF TEMPORAL ANTIALIASING TECHNIQUES: PRESENTATION NOTES  
+OPTIMIZING FOR THE RDNA ARCHITECTURE: PRESENTATION NOTES  
+GPU ARCHITECTURE RESOURCES  
+VALIDATING PHYSICAL LIGHT UNITS  
+WAYS TO SPEEDUP PIXEL SHADER EXECUTION  
+HYBRID SCREEN-SPACE REFLECTIONS  
+**READINGS ON THE STATE OF THE ART IN RENDERING**
+HYBRID RAYTRACED SHADOWS  
+  
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/lvcheng1229/lvcheng1229.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
