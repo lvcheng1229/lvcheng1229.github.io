@@ -59,7 +59,20 @@ WAYS TO SPEEDUP PIXEL SHADER EXECUTION
 HYBRID SCREEN-SPACE REFLECTIONS  
 **READINGS ON THE STATE OF THE ART IN RENDERING**
 HYBRID RAYTRACED SHADOWS  
-  
+
+[UE 优化 intel](https://software.intel.com/content/www/us/en/develop/topics/gamedev/documentation.html?query=&currentPage=1&externalFilter=guid:etm-53acbaff8f364e9ab81dab70bde384c4;)
+
+[DXR and RayTracing Tutorial(GitHub)](https://github.com/NVIDIAGameWorks/GettingStartedWithRTXRayTracing)  
+下面的在Readme中  
+The DirectX Raytracing (DXR) specification v0.09.文档  
+Microsoft's experimental installation package with everything needed to build DXR apps.  
+Microsoft's early DXR samples.  
+NVIDIA's early DXR samples.  
+NVIDIA Research's Falcor prototyping framework.   
+The Real-Time Rendering Ray Tracing Resources Page, which includes a free chapter on the basic ideas behind DXR and interactive ray tracing.   
+
+**[HLSL and UE4 Development Blog](https://shaderbits.com/blog)**  
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/lvcheng1229/lvcheng1229.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
