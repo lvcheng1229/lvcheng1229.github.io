@@ -77,9 +77,12 @@ The Real-Time Rendering Ray Tracing Resources Page, which includes a free chapte
 [He has presented at conferences (GDC, SIGGRAPH, I3D) and published work on books (GPU Pro)](https://colinbarrebrisebois.com)
 
 **[siggraph上一些关于实时渲染的资源](https://blog.selfshadow.com/)**
+
+[barries and sphere gaussian](https://therealmjp.github.io/posts/)   
+
 ## Welcome to GitHub Pages
 
-[barries and sphere gaussian]https://therealmjp.github.io/posts/  
+
 
 You can use the [editor on GitHub](https://github.com/lvcheng1229/lvcheng1229.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
 
