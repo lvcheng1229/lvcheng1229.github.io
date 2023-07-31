@@ -19,15 +19,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lvcheng1229.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="test Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+    <meta name="description" content="The complexity of postprocess effects varies depending on the screen tile they are applied to. For example, we can only take one sample(disable blur) for pixels whose velocity is relatively low using">
 <meta property="og:type" content="article">
-<meta property="og:title" content="cepptb">
+<meta property="og:title" content="CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute">
 <meta property="og:url" content="https://lvcheng1229.github.io/2023/07/30/cepptb/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="test Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.">
+<meta property="og:description" content="The complexity of postprocess effects varies depending on the screen tile they are applied to. For example, we can only take one sample(disable blur) for pixels whose velocity is relatively low using">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-07-30T10:23:25.000Z">
-<meta property="article:modified_time" content="2023-07-30T11:23:45.204Z">
+<meta property="article:published_time" content="2023-07-30T15:08:25.000Z">
+<meta property="article:modified_time" content="2023-07-31T15:42:36.674Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
@@ -36,10 +36,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/07/30/cepptb/","path":"2023/07/30/cepptb/","title":"cepptb"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/07/30/cepptb/","path":"2023/07/30/cepptb/","title":"CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>cepptb | Hexo</title>
+<title>CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute | Hexo</title>
   
 
 
@@ -157,12 +157,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="cepptb | Hexo">
+      <meta itemprop="name" content="CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute | Hexo">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          cepptb
+          CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute
         </h1>
 
         <div class="post-meta-container">
@@ -172,9 +172,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-07-30 18:23:25 / Modified: 19:23:45" itemprop="dateCreated datePublished" datetime="2023-07-30T18:23:25+08:00">2023-07-30</time>
+      <time title="Created: 2023-07-30 23:08:25" itemprop="dateCreated datePublished" datetime="2023-07-30T23:08:25+08:00">2023-07-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-07-31 23:42:36" itemprop="dateModified" datetime="2023-07-31T23:42:36+08:00">2023-07-31</time>
     </span>
 
   
@@ -186,7 +192,10 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>test Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+    <div class="post-body" itemprop="articleBody"><p>The complexity of postprocess effects varies depending on the screen tile they are applied to. For example, we can only take one sample(disable blur) for pixels whose velocity is relatively low using branch operation. However, dynamic branch operation on the GPU is costly since we cannot ensure that multiple threads don’t diverge.</p>
+<p>The probability of divergence will be significantly reduced if different shaders can be executed on different screen tiles. Therefore, the problem is how to dispatch different shaders on various tiles. </p>
+<p>The answer is: Indirect-Compute Shader! How to implement this? The first step is to dispatch a compute shader to classify the tiles and determine the tile count and index for each shader complexity level. Then, dispatch a variety of indirect-compute shaders for each tile with the arguments generated in the last step.The result is that each tile executes a specific version of the shader and eliminates execution divergence.</p>
+<p>This article will take the bloom pass as an example of implementing the tile-based post process.</p>
 
     </div>
 
@@ -200,11 +209,11 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
+                <a href="/2023/07/30/hello-world/" rel="prev" title="Hello World">
+                  <i class="fa fa-angle-left"></i> Hello World
+                </a>
             </div>
             <div class="post-nav-item">
-                <a href="/2023/07/30/hello-world/" rel="next" title="Hello World">
-                  Hello World <i class="fa fa-angle-right"></i>
-                </a>
             </div>
           </div>
     </footer>
