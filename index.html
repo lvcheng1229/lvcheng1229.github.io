@@ -454,7 +454,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-08-09 23:01:03" itemprop="dateModified" datetime="2023-08-09T23:01:03+08:00">2023-08-09</time>
+      <time title="Modified: 2023-08-09 23:52:01" itemprop="dateModified" datetime="2023-08-09T23:52:01+08:00">2023-08-09</time>
     </span>
 
   
@@ -473,12 +473,9 @@
 <p>This article will take the bloom pass as an example of implementing the tile-based post process.</p>
 <p>The bloom algorithm is based on the implementation of CryEngine in this demo. So, we are going to discuss the implementation of CryEngine first. There are three parts to CryEngine’s bloom algorithm. The first part is downsampling. CryEngine takes two passes to downsample the render target. The output of the downsample is a quarter-resolution render target relative to the original RT. Then, CryEngine performs a Gaussian blur with a quarter-resolution render target. In this step, CE takes four passes to blur the source texture: two for vertical and two for horizontal. Each pass samples the texture 16 times, so the total number of samples is 64 * Resolution! Finally, CE performs a lerp between scene color and bloom results as the result in the tone mapping pass.</p>
 <p>The tiled-based bloom has four parts: </p>
+<p><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/flowinfo2.jpg"></p>
 <p>1.Mask screen tiles contain pixels whose luminance exceeds the threshold.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(Luminance &gt; BloomThreshlod)</span><br><span class="line">&#123;</span><br><span class="line">	Result.rgb = BloomOUT.rgb;</span><br><span class="line">	MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<p><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImgflowinfo.jpg" alt="flowinfo"></p>
-
       
     </div>
 
