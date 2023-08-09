@@ -16,18 +16,6 @@ The bloom algorithm is based on the implementation of CryEngine in this demo. So
 
 The tiled-based bloom has four parts: 
 
-https://blog.csdn.net/u014155600/article/details/128950724
-
-{% asset_path /cepptb/algoconclusion.jpg %}
-{% asset_img /cepptb/algoconclusion.jpg %}
-
-![image file label](/assets/cepptb/algoconclusion.jpg)
-![image file label](/cepptb/algoconclusion.jpg)
-<img src="H:/lvcheng1229.github.io/assets/cepptb/algoconclusion.jpg">
-
-<img src="assets/cepptb/algoconclusion.jpg" width="25%" height="25%" />
-
-![百度图片--lena](http://images2018.cnblogs.com/blog/1003156/201806/1003156-20180604175546711-227291592.png)
 
 1.Mask screen tiles contain pixels whose luminance exceeds the threshold.
 
@@ -38,8 +26,6 @@ if(Luminance > BloomThreshlod)
 	MaskInfo[GroupThreadID.y * GROUP_SIZE_X + GroupThreadID.x] = 1;
 }
 ```
-
-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
 
 
 ![flowinfo](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImgflowinfo.jpg)
