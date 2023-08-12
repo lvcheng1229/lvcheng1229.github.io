@@ -112,7 +112,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -130,6 +130,76 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://lvcheng1229.github.io/2023/08/13/uevsma/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | Hexo">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2023/08/13/uevsma/" class="post-title-link" itemprop="url">An analysis of the implementation of virtual shadow maps in Unreal Engine</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-08-13 00:02:10 / Modified: 00:18:23" itemprop="dateCreated datePublished" datetime="2023-08-13T00:02:10+08:00">2023-08-13</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>I implemented a simplified virtual shadow map during my undergraduate studies. When I saw UE’s virtual shadow map implementation after graduation, I discovered it has many excellent optimization and details. So I wrote this article to analyze its source code.</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -454,7 +524,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-08-12 22:48:50" itemprop="dateModified" datetime="2023-08-12T22:48:50+08:00">2023-08-12</time>
+      <time title="Modified: 2023-08-12 23:01:54" itemprop="dateModified" datetime="2023-08-12T23:01:54+08:00">2023-08-12</time>
     </span>
 
   
@@ -500,7 +570,7 @@
 <p>The dispatch size is (12,1,1) in this example.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetDispatchIndirectArgs</span>(&amp;m_dispatchIndirectCount[IndexPass], <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
 
-<p>Get the index for those tiles performing Gaussian blur and calculate the global UV coordinates based on the tile index.</p>
+<p>Get the index for those tiles performing Gaussian blur indexed by GroupID from the tile index buffer and calculate the global UV coordinates based on the tile index.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uint TileIndex = BloomFinal_TileInfoUAV.<span class="built_in">Load</span>(GroupID.x).x;</span><br><span class="line">uint2 TileIndexXY = <span class="built_in">uint2</span>(TileIndex &amp; <span class="number">0xFFFF</span>,(TileIndex &gt;&gt; <span class="number">16</span>) &amp; <span class="number">0xFFFF</span>);</span><br><span class="line">uint2 UVCoord = TileIndexXY * <span class="built_in">uint2</span>(GROUP_SIZE_X * <span class="number">2</span>,GROUP_SIZE_Y * <span class="number">2</span>) + <span class="built_in">uint2</span>(GroupThreadIndex % (GROUP_SIZE_Y * <span class="number">2</span>), GroupThreadIndex / (GROUP_SIZE_X * <span class="number">2</span>));</span><br></pre></td></tr></table></figure>
 <p>Finally, blur the input texture. Here is the code copied from CryEngine’s Gaussian blur implementation:</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">float</span> weights[<span class="number">15</span>] = &#123; <span class="number">153</span>, <span class="number">816</span>, <span class="number">3060</span>, <span class="number">8568</span>, <span class="number">18564</span>, <span class="number">31824</span>, <span class="number">43758</span>, <span class="number">48620</span>, <span class="number">43758</span>, <span class="number">31824</span>, <span class="number">18564</span>, <span class="number">8568</span>, <span class="number">3060</span>, <span class="number">816</span>, <span class="number">153</span> &#125;;</span><br><span class="line"><span class="type">const</span> <span class="type">float</span> weightSum = <span class="number">262106.0</span>;</span><br><span class="line"></span><br><span class="line">float2 coords = <span class="built_in">float2</span>(UVCoord) * bloomTexSize.zw - bloomParams.xy * <span class="number">7.0</span>;</span><br><span class="line">half3 vColor = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">[unroll]</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">15</span>; ++i)</span><br><span class="line">&#123;</span><br><span class="line">	vColor += <span class="built_in">GetTexture2DLod</span>(BloomFinal_Tx2Tx_Source, BloomFinal_Tx2Tx_Sampler, coords,<span class="number">0.0</span>).rgb * (weights[i] / weightSum);</span><br><span class="line">	coords += bloomParams.xy;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">BloomFinal_OutputUAV[UVCoord] = <span class="built_in">float4</span>(vColor,<span class="number">1.0</span>);</span><br></pre></td></tr></table></figure>
