@@ -112,7 +112,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -366,77 +366,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/08/01/cesvsm/" class="post-title-link" itemprop="url">CryEngine Shadow:Virtual Shadow Map</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2023-08-01 00:06:36 / Modified: 00:07:08" itemprop="dateCreated datePublished" datetime="2023-08-01T00:06:36+08:00">2023-08-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>CryEngine Shadow:Virtual Shadow Map</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lvcheng1229.github.io/2023/08/01/uevsma/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Hexo">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/08/01/uevsma/" class="post-title-link" itemprop="url">An analysis of the implementation of virtual shadow maps in Unreal Engine</a>
+          <a href="/2023/08/01/cesvsm/" class="post-title-link" itemprop="url">Implement virtual shadow map in CryEngine</a>
         </h2>
 
         <div class="post-meta-container">
@@ -447,14 +377,14 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2023-08-01 00:02:10" itemprop="dateCreated datePublished" datetime="2023-08-01T00:02:10+08:00">2023-08-01</time>
+      <time title="Created: 2023-08-01 00:06:36" itemprop="dateCreated datePublished" datetime="2023-08-01T00:06:36+08:00">2023-08-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-08-13 00:19:45" itemprop="dateModified" datetime="2023-08-13T00:19:45+08:00">2023-08-13</time>
+      <time title="Modified: 2023-10-06 21:11:14" itemprop="dateModified" datetime="2023-10-06T21:11:14+08:00">2023-10-06</time>
     </span>
 
   
@@ -467,7 +397,46 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>I implemented a simplified virtual shadow map during my undergraduate studies. When I saw UE’s virtual shadow map implementation after graduation, I discovered it has many excellent optimization and details. So I wrote this article to analyze its source code.</p>
+          <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>Real-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which decreases game reality. The most used real-time shadow technique is shadow mapping. This technique causes two artifacts: shadow acne and aliasing. The reason behind these artifacts is that many pixels on the screen correspond to one texel on the shadow map. </p>
+<p>Ideally, we can solve these problems by allocating an infinite shadow map texture. However, we can’t do this, since video memory is limited. For real-time shadow rendering, most games use CSM (cascade shadow map) to achieve a balance between shadow map quality and game performance. The key idea of CSM is to render a high-quality shadow map for the scene closer to the camera and decrease the shadow quality for further objects.</p>
+<p>Virtual shadow map is a possible solution to solving these problems. The main points of Virtual-SM are:1. Only render shadow casters whose shadow can be seen by the camera. 2. Assume the video memory and shadow map texture is large enough (like virtual memory). 3. Manage the scene’s objects and dispatch draw commands on the GPU.</p>
+<h1 id="Related-techniques-used-in-Virtual-SM"><a href="#Related-techniques-used-in-Virtual-SM" class="headerlink" title="Related techniques used in Virtual-SM"></a>Related techniques used in Virtual-SM</h1><p>Before discussing Virtual-SM, we will introduce some related techniques: virtual texture and GPU-driven rendering, since Virtual-SM’s idea is similar to the above techniques.</p>
+<h2 id="Virtual-Texture"><a href="#Virtual-Texture" class="headerlink" title="Virtual Texture"></a>Virtual Texture</h2><p>The virtual texture is proposed based on a technique called mega texture. Like virtual memory in OS, virtual texture assumes the texture resolution is large enough and does not require the entire texture to be loaded. Instead, we only need to load the part of the texture that is actually used in the current view.</p>
+<p>Virtual texture has many variations depending on the situation: streaming virtual texture (SVT), run-time virtual texture (RVT), and its improved version adaptive virtual texture (AVT). The ideas behind SVT&#x2F;RVT&#x2F;AVT are also contained in the Virtual-SM.</p>
+<h3 id="Streaming-Virtual-Texture"><a href="#Streaming-Virtual-Texture" class="headerlink" title="Streaming Virtual Texture"></a>Streaming Virtual Texture</h3><p>Streaming virtual texture has four parts:</p>
+<ol>
+<li>Split the virtual texture into NxN tiles or pages.</li>
+<li>Collect the tile and the mipmap of the texture required in the current view. This step can be executed in a separate pass or combined with the PreZ &#x2F; GBuffer Pass.</li>
+<li>Feedback and analyze the results and load the texture tiles used.</li>
+<li>Construct and update the indirect texture, which stores the coordinates mapping from virtual texture to physical texture.</li>
+</ol>
+<p>Compared to mipmap texture streaming, SVT has the following advantages:</p>
+<ol>
+<li>Save video memory (we only load the texture tiles required).</li>
+<li>Finer granularity (the minimum load unit is texture tile rather than texture mip).</li>
+<li>More accurately (mip texture streaming is computed on CPU and will get wrong results for complex texture types, such as Atlas. SVT is computed on the GPU based on the ddx&#x2F;ddy operation).</li>
+</ol>
+<h3 id="Runtime-Virtual-Texture"><a href="#Runtime-Virtual-Texture" class="headerlink" title="Runtime Virtual Texture"></a>Runtime Virtual Texture</h3><p>The texture content of SVT is loaded from the disk, that is, generated offline. And RVT generates texture content at runtime. It is most used in terrain rendering. The key idea of RVT in terrain rendering is caching the texture blend result into a runtime virtual texture. This has several advantages compared to the SVT and traditional splat map method:</p>
+<ol>
+<li>The texture size is too large to store on the disk if we use SVT to blend the terrain texture offline</li>
+<li>We need to sample many times for terrain textures (normal &#x2F; base color&#x2F;splat map) for the traditional splat map method. There are only four channels in a splat map, so we can only record four terrain weights, which limits the art effect.</li>
+<li>RVT has better performance than the splat map method, and the texture size stored on disk is smaller than SVT. In other words, RVT is a compromise solution to SVT and splat map.</li>
+</ol>
+<h3 id="Adaptive-Virtual-Texture"><a href="#Adaptive-Virtual-Texture" class="headerlink" title="Adaptive Virtual Texture"></a>Adaptive Virtual Texture</h3><p>Adaptive virtual texture is an improved version based on the RVT. We will get a large indirect table if the terrain is wide enough. AVT solves this problem by allocating different VT sizes depending on camera distance.</p>
+<h2 id="GPU-Driven-Rendering"><a href="#GPU-Driven-Rendering" class="headerlink" title="GPU-Driven Rendering"></a>GPU-Driven Rendering</h2><p>In virtual shadow map, each shadow map tile corresponds to a frustum. This means that Virtual-SM will perform culling many times, which is unaffordable for the CPU. GPU-driven rendering can solve these problems by moving culling and submitting tasks from CPU to GPU. Let’s introduce the basic GPU-driven pipeline first. </p>
+<p>GPU-driven rendering pipeline has three parts: preparing GPU data, culling on GPU, and work submission.</p>
+<h3 id="Prepare-GPU-data"><a href="#Prepare-GPU-data" class="headerlink" title="Prepare GPU data"></a>Prepare GPU data</h3><ol>
+<li>Before submitting data to the GPU, we can perform a coarse quad tree culling on the CPU, which reduces the data uploaded to the GPU.</li>
+<li>Prepare the data that will be updated. This includes 1. instance&#x2F;primitive data (transform&#x2F;lod factor&#x2F;bounding box), 2. Light map data etc.</li>
+<li>Batch draw calls and update the GPU data required in the next step</li>
+</ol>
+<h3 id="Culling-on-GPU"><a href="#Culling-on-GPU" class="headerlink" title="Culling on GPU"></a>Culling on GPU</h3><p>Culling on GPU, contains the following steps:</p>
+<ol>
+<li>Instance culling, perform frustum culling and HIZ culling on GPU. And generate the cluster chunk for those instances passing culling.</li>
+<li>Perform the frustum and occlusion culling for each cluster based on the cluster’s transform and bound. And perform back-face culling based on cluster orientation precomputed offline.</li>
+<li>Index buffer compaction, culling the index unused.</li>
+</ol>
+<h3 id="Work-Submission"><a href="#Work-Submission" class="headerlink" title="Work Submission"></a>Work Submission</h3><p>Generate commands buffer and use indirect draw to submit the work</p>
 
       
     </div>
@@ -512,7 +481,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/07/30/cepptb/" class="post-title-link" itemprop="url">CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute</a>
+          <a href="/2023/07/30/cepptb/" class="post-title-link" itemprop="url">Implement tiled-Based indirect bloom in CryEngine</a>
         </h2>
 
         <div class="post-meta-container">
@@ -530,7 +499,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-08-12 23:01:54" itemprop="dateModified" datetime="2023-08-12T23:01:54+08:00">2023-08-12</time>
+      <time title="Modified: 2023-10-05 22:51:05" itemprop="dateModified" datetime="2023-10-05T22:51:05+08:00">2023-10-05</time>
     </span>
 
   
@@ -606,14 +575,6 @@
 <td align="center"><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/bloomresultj.jpg"></td>
 </tr>
 </tbody></table>
-<h1 id="Source-Code"><a href="#Source-Code" class="headerlink" title="Source Code"></a>Source Code</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">textureSize = <span class="built_in">Vec4</span>(<span class="built_in">static_cast</span>&lt;<span class="type">float</span>&gt;(width), <span class="built_in">static_cast</span>&lt;<span class="type">float</span>&gt;(height), <span class="number">1.0f</span> / <span class="built_in">static_cast</span>&lt;<span class="type">float</span>&gt;(width), <span class="number">1.0f</span> / <span class="built_in">static_cast</span>&lt;<span class="type">float</span>&gt;(height));</span><br><span class="line">maskBufferSize[<span class="number">0</span>] = <span class="built_in">Vec4i</span>(<span class="built_in">divideRoundUp</span>(<span class="built_in">Vec2i</span>(width, height), <span class="built_in">Vec2i</span>(groupSizeX, groupSizeY)), <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">maskBufferSize[<span class="number">1</span>] = <span class="built_in">Vec4i</span>(<span class="built_in">divideRoundUp</span>(<span class="built_in">Vec2i</span>(width, height), <span class="built_in">Vec2i</span>(groupSizeX * <span class="number">2</span>, groupSizeY * <span class="number">2</span>)), <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"><span class="function">Vec2i <span class="title">bloomSetupDispatchSize</span><span class="params">(maskBufferSize[<span class="number">0</span>].x, maskBufferSize[<span class="number">0</span>].y)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">dispatchSizeIndexGen[<span class="number">0</span>] = <span class="built_in">divideRoundUp</span>(<span class="built_in">Vec2i</span>(maskBufferSize[<span class="number">0</span>].x, maskBufferSize[<span class="number">0</span>].y), <span class="built_in">Vec2i</span>(groupSizeX, groupSizeY));</span><br><span class="line">dispatchSizeIndexGen[<span class="number">1</span>] = <span class="built_in">divideRoundUp</span>(<span class="built_in">Vec2i</span>(maskBufferSize[<span class="number">1</span>].x, maskBufferSize[<span class="number">1</span>].y), <span class="built_in">Vec2i</span>(groupSizeX, groupSizeY));</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!bBufferInit)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">InitBuffer</span>();</span><br><span class="line">	bBufferInit = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> ColorI nulls = &#123; <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> <span class="type">bool</span> bAsynchronousCompute = CRenderer::CV_r_D3D12AsynchronousCompute &amp; <span class="built_in">BIT</span>((eStage_BloomSetup - eStage_FIRST_ASYNC_COMPUTE)) ? <span class="literal">true</span> : <span class="literal">false</span>;</span><br><span class="line">&#123;</span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetTechnique</span>(CShaderMan::s_shBloomSetup, <span class="built_in">CCryNameTSCRC</span>(<span class="string">&quot;BloomSetup&quot;</span>), <span class="number">0</span>);</span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetOutputUAV</span>(<span class="number">0</span>, pTiledBloomRT[<span class="number">0</span>]);</span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetOutputUAV</span>(<span class="number">1</span>, &amp;m_tileBloomMaskBuffer[<span class="number">0</span>]);</span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetTextureSamplerPair</span>(<span class="number">0</span>, pSrcRT, EDefaultSamplerStates::LinearClamp);</span><br><span class="line"></span><br><span class="line">	m_parameters-&gt;TexSize = textureSize;</span><br><span class="line">	m_parameters-&gt;BufferSize = maskBufferSize[<span class="number">0</span>];</span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetConstantBuffer</span>(<span class="number">0</span>, m_parameters.<span class="built_in">GetDeviceConstantBuffer</span>());</span><br><span class="line"></span><br><span class="line">	m_passBloomSetup.<span class="built_in">SetDispatchSize</span>(bloomSetupDispatchSize.x, bloomSetupDispatchSize.y, <span class="number">1</span>);</span><br><span class="line">	m_passBloomSetup.<span class="built_in">PrepareResourcesForUse</span>(<span class="built_in">GetDeviceObjectFactory</span>().<span class="built_in">GetCoreCommandList</span>());</span><br><span class="line"></span><br><span class="line">	<span class="function">SScopedComputeCommandList <span class="title">computeCommandList</span><span class="params">(bAsynchronousCompute)</span></span>;</span><br><span class="line">	m_passBloomSetup.<span class="built_in">Execute</span>(computeCommandList);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (int32 Index = <span class="number">0</span>; Index &lt; <span class="number">2</span>; Index++)</span><br><span class="line">&#123;</span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetTechnique</span>(CShaderMan::s_shBloomSetup, <span class="built_in">CCryNameTSCRC</span>(<span class="string">&quot;BloomTileIndexGen&quot;</span>), Index == <span class="number">0</span> ? g_HWSR_MaskBit[HWSR_SAMPLE0] : <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetOutputUAV</span>(<span class="number">0</span>, &amp;m_tileIndexBuffer[Index]);</span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetOutputUAV</span>(<span class="number">1</span>, &amp;m_dispatchIndirectCount[Index]);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (Index == <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetOutputUAV</span>(<span class="number">2</span>, &amp;m_tileBloomMaskBuffer[<span class="number">1</span>]);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetBuffer</span>(<span class="number">0</span>, &amp;m_tileBloomMaskBuffer[Index]);</span><br><span class="line"></span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">BeginConstantUpdate</span>();</span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetConstant</span>(<span class="built_in">CCryNameR</span>(<span class="string">&quot;MaskBufferSize&quot;</span>), maskBufferSize[Index]);</span><br><span class="line"></span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">SetDispatchSize</span>(dispatchSizeIndexGen[Index].x, dispatchSizeIndexGen[Index].y, <span class="number">1</span>);</span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">PrepareResourcesForUse</span>(<span class="built_in">GetDeviceObjectFactory</span>().<span class="built_in">GetCoreCommandList</span>());</span><br><span class="line"></span><br><span class="line">	<span class="function">SScopedComputeCommandList <span class="title">computeCommandList</span><span class="params">(bAsynchronousCompute)</span></span>;</span><br><span class="line">	m_passBloomTileIndexGen[Index]-&gt;<span class="built_in">Execute</span>(computeCommandList);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CClearSurfacePass::<span class="built_in">Execute</span>(pTiledBloomRT[<span class="number">1</span>], <span class="built_in">ColorF</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (int32 IndexPass = <span class="number">0</span>; IndexPass &lt; <span class="number">2</span>; IndexPass++)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">const</span> CCryNameTSCRC TechName[<span class="number">2</span>] = &#123; (<span class="string">&quot;BloomFinal&quot;</span>),(<span class="string">&quot;BloomCombine&quot;</span>) &#125;;</span><br><span class="line">	<span class="keyword">for</span> (int32 IndexAxis = <span class="number">0</span>; IndexAxis &lt; <span class="number">2</span>; IndexAxis++)</span><br><span class="line">	&#123;</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetTechnique</span>(CShaderMan::s_shBloomSetup, TechName[IndexPass], <span class="number">0</span>);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetOutputUAV</span>(<span class="number">0</span>, pTiledBloomRT[<span class="number">1</span> - (IndexAxis + IndexPass * <span class="number">2</span>) % <span class="number">2</span>]);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetOutputUAV</span>(<span class="number">1</span>, &amp;m_tileIndexBuffer[IndexPass]);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetTextureSamplerPair</span>(<span class="number">0</span>, pTiledBloomRT[(IndexAxis + IndexPass * <span class="number">2</span>) % <span class="number">2</span>], EDefaultSamplerStates::LinearClamp);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">BeginConstantUpdate</span>();</span><br><span class="line"></span><br><span class="line">		Vec4 bloomParams;</span><br><span class="line">		<span class="keyword">if</span> (IndexAxis == <span class="number">0</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			bloomParams = <span class="built_in">Vec4</span>(<span class="number">1.0f</span> * textureSize.z * (IndexPass + <span class="number">1</span>), <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			bloomParams = <span class="built_in">Vec4</span>(<span class="number">0</span>, <span class="number">1.0f</span> * textureSize.w * (IndexPass + <span class="number">1</span>), <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetConstant</span>(<span class="built_in">CCryNameR</span>(<span class="string">&quot;bloomParams&quot;</span>), bloomParams);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetConstant</span>(<span class="built_in">CCryNameR</span>(<span class="string">&quot;bloomTexSize&quot;</span>), textureSize);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">SetDispatchIndirectArgs</span>(&amp;m_dispatchIndirectCount[IndexPass], <span class="number">0</span>);</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">PrepareResourcesForUse</span>(<span class="built_in">GetDeviceObjectFactory</span>().<span class="built_in">GetCoreCommandList</span>());</span><br><span class="line"></span><br><span class="line">		<span class="function">SScopedComputeCommandList <span class="title">computeCommandList</span><span class="params">(bAsynchronousCompute)</span></span>;</span><br><span class="line">		m_passBloom[IndexPass][IndexAxis]-&gt;<span class="built_in">Execute</span>(computeCommandList);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
 
       
     </div>

@@ -19,15 +19,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lvcheng1229.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="CryEngine Shadow:Virtual Shadow Map">
+    <meta name="description" content="AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CryEngine Shadow:Virtual Shadow Map">
+<meta property="og:title" content="Implement virtual shadow map in CryEngine">
 <meta property="og:url" content="https://lvcheng1229.github.io/2023/08/01/cesvsm/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="CryEngine Shadow:Virtual Shadow Map">
+<meta property="og:description" content="AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-07-31T16:06:36.000Z">
-<meta property="article:modified_time" content="2023-07-31T16:07:08.550Z">
+<meta property="article:modified_time" content="2023-10-06T13:11:14.369Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
@@ -36,10 +36,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/08/01/cesvsm/","path":"2023/08/01/cesvsm/","title":"CryEngine Shadow:Virtual Shadow Map"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/08/01/cesvsm/","path":"2023/08/01/cesvsm/","title":"Implement virtual shadow map in CryEngine"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>CryEngine Shadow:Virtual Shadow Map | Hexo</title>
+<title>Implement virtual shadow map in CryEngine | Hexo</title>
   
 
 
@@ -91,7 +91,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -104,6 +104,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Abstract"><span class="nav-number">1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Related-techniques-used-in-Virtual-SM"><span class="nav-number">2.</span> <span class="nav-text">Related techniques used in Virtual-SM</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Virtual-Texture"><span class="nav-number">2.1.</span> <span class="nav-text">Virtual Texture</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Streaming-Virtual-Texture"><span class="nav-number">2.1.1.</span> <span class="nav-text">Streaming Virtual Texture</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Runtime-Virtual-Texture"><span class="nav-number">2.1.2.</span> <span class="nav-text">Runtime Virtual Texture</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Adaptive-Virtual-Texture"><span class="nav-number">2.1.3.</span> <span class="nav-text">Adaptive Virtual Texture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GPU-Driven-Rendering"><span class="nav-number">2.2.</span> <span class="nav-text">GPU-Driven Rendering</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Prepare-GPU-data"><span class="nav-number">2.2.1.</span> <span class="nav-text">Prepare GPU data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Culling-on-GPU"><span class="nav-number">2.2.2.</span> <span class="nav-text">Culling on GPU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Work-Submission"><span class="nav-number">2.2.3.</span> <span class="nav-text">Work Submission</span></a></li></ol></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -116,7 +117,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">5</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -157,12 +158,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="CryEngine Shadow:Virtual Shadow Map | Hexo">
+      <meta itemprop="name" content="Implement virtual shadow map in CryEngine | Hexo">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          CryEngine Shadow:Virtual Shadow Map
+          Implement virtual shadow map in CryEngine
         </h1>
 
         <div class="post-meta-container">
@@ -172,9 +173,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-08-01 00:06:36 / Modified: 00:07:08" itemprop="dateCreated datePublished" datetime="2023-08-01T00:06:36+08:00">2023-08-01</time>
+      <time title="Created: 2023-08-01 00:06:36" itemprop="dateCreated datePublished" datetime="2023-08-01T00:06:36+08:00">2023-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-06 21:11:14" itemprop="dateModified" datetime="2023-10-06T21:11:14+08:00">2023-10-06</time>
     </span>
 
   
@@ -186,7 +193,46 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>CryEngine Shadow:Virtual Shadow Map</p>
+    <div class="post-body" itemprop="articleBody"><h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>Real-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which decreases game reality. The most used real-time shadow technique is shadow mapping. This technique causes two artifacts: shadow acne and aliasing. The reason behind these artifacts is that many pixels on the screen correspond to one texel on the shadow map. </p>
+<p>Ideally, we can solve these problems by allocating an infinite shadow map texture. However, we can’t do this, since video memory is limited. For real-time shadow rendering, most games use CSM (cascade shadow map) to achieve a balance between shadow map quality and game performance. The key idea of CSM is to render a high-quality shadow map for the scene closer to the camera and decrease the shadow quality for further objects.</p>
+<p>Virtual shadow map is a possible solution to solving these problems. The main points of Virtual-SM are:1. Only render shadow casters whose shadow can be seen by the camera. 2. Assume the video memory and shadow map texture is large enough (like virtual memory). 3. Manage the scene’s objects and dispatch draw commands on the GPU.</p>
+<h1 id="Related-techniques-used-in-Virtual-SM"><a href="#Related-techniques-used-in-Virtual-SM" class="headerlink" title="Related techniques used in Virtual-SM"></a>Related techniques used in Virtual-SM</h1><p>Before discussing Virtual-SM, we will introduce some related techniques: virtual texture and GPU-driven rendering, since Virtual-SM’s idea is similar to the above techniques.</p>
+<h2 id="Virtual-Texture"><a href="#Virtual-Texture" class="headerlink" title="Virtual Texture"></a>Virtual Texture</h2><p>The virtual texture is proposed based on a technique called mega texture. Like virtual memory in OS, virtual texture assumes the texture resolution is large enough and does not require the entire texture to be loaded. Instead, we only need to load the part of the texture that is actually used in the current view.</p>
+<p>Virtual texture has many variations depending on the situation: streaming virtual texture (SVT), run-time virtual texture (RVT), and its improved version adaptive virtual texture (AVT). The ideas behind SVT&#x2F;RVT&#x2F;AVT are also contained in the Virtual-SM.</p>
+<h3 id="Streaming-Virtual-Texture"><a href="#Streaming-Virtual-Texture" class="headerlink" title="Streaming Virtual Texture"></a>Streaming Virtual Texture</h3><p>Streaming virtual texture has four parts:</p>
+<ol>
+<li>Split the virtual texture into NxN tiles or pages.</li>
+<li>Collect the tile and the mipmap of the texture required in the current view. This step can be executed in a separate pass or combined with the PreZ &#x2F; GBuffer Pass.</li>
+<li>Feedback and analyze the results and load the texture tiles used.</li>
+<li>Construct and update the indirect texture, which stores the coordinates mapping from virtual texture to physical texture.</li>
+</ol>
+<p>Compared to mipmap texture streaming, SVT has the following advantages:</p>
+<ol>
+<li>Save video memory (we only load the texture tiles required).</li>
+<li>Finer granularity (the minimum load unit is texture tile rather than texture mip).</li>
+<li>More accurately (mip texture streaming is computed on CPU and will get wrong results for complex texture types, such as Atlas. SVT is computed on the GPU based on the ddx&#x2F;ddy operation).</li>
+</ol>
+<h3 id="Runtime-Virtual-Texture"><a href="#Runtime-Virtual-Texture" class="headerlink" title="Runtime Virtual Texture"></a>Runtime Virtual Texture</h3><p>The texture content of SVT is loaded from the disk, that is, generated offline. And RVT generates texture content at runtime. It is most used in terrain rendering. The key idea of RVT in terrain rendering is caching the texture blend result into a runtime virtual texture. This has several advantages compared to the SVT and traditional splat map method:</p>
+<ol>
+<li>The texture size is too large to store on the disk if we use SVT to blend the terrain texture offline</li>
+<li>We need to sample many times for terrain textures (normal &#x2F; base color&#x2F;splat map) for the traditional splat map method. There are only four channels in a splat map, so we can only record four terrain weights, which limits the art effect.</li>
+<li>RVT has better performance than the splat map method, and the texture size stored on disk is smaller than SVT. In other words, RVT is a compromise solution to SVT and splat map.</li>
+</ol>
+<h3 id="Adaptive-Virtual-Texture"><a href="#Adaptive-Virtual-Texture" class="headerlink" title="Adaptive Virtual Texture"></a>Adaptive Virtual Texture</h3><p>Adaptive virtual texture is an improved version based on the RVT. We will get a large indirect table if the terrain is wide enough. AVT solves this problem by allocating different VT sizes depending on camera distance.</p>
+<h2 id="GPU-Driven-Rendering"><a href="#GPU-Driven-Rendering" class="headerlink" title="GPU-Driven Rendering"></a>GPU-Driven Rendering</h2><p>In virtual shadow map, each shadow map tile corresponds to a frustum. This means that Virtual-SM will perform culling many times, which is unaffordable for the CPU. GPU-driven rendering can solve these problems by moving culling and submitting tasks from CPU to GPU. Let’s introduce the basic GPU-driven pipeline first. </p>
+<p>GPU-driven rendering pipeline has three parts: preparing GPU data, culling on GPU, and work submission.</p>
+<h3 id="Prepare-GPU-data"><a href="#Prepare-GPU-data" class="headerlink" title="Prepare GPU data"></a>Prepare GPU data</h3><ol>
+<li>Before submitting data to the GPU, we can perform a coarse quad tree culling on the CPU, which reduces the data uploaded to the GPU.</li>
+<li>Prepare the data that will be updated. This includes 1. instance&#x2F;primitive data (transform&#x2F;lod factor&#x2F;bounding box), 2. Light map data etc.</li>
+<li>Batch draw calls and update the GPU data required in the next step</li>
+</ol>
+<h3 id="Culling-on-GPU"><a href="#Culling-on-GPU" class="headerlink" title="Culling on GPU"></a>Culling on GPU</h3><p>Culling on GPU, contains the following steps:</p>
+<ol>
+<li>Instance culling, perform frustum culling and HIZ culling on GPU. And generate the cluster chunk for those instances passing culling.</li>
+<li>Perform the frustum and occlusion culling for each cluster based on the cluster’s transform and bound. And perform back-face culling based on cluster orientation precomputed offline.</li>
+<li>Index buffer compaction, culling the index unused.</li>
+</ol>
+<h3 id="Work-Submission"><a href="#Work-Submission" class="headerlink" title="Work Submission"></a>Work Submission</h3><p>Generate commands buffer and use indirect draw to submit the work</p>
 
     </div>
 
@@ -200,8 +246,8 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/08/01/uevsma/" rel="prev" title="An analysis of the implementation of virtual shadow maps in Unreal Engine">
-                  <i class="fa fa-angle-left"></i> An analysis of the implementation of virtual shadow maps in Unreal Engine
+                <a href="/2023/07/30/cepptb/" rel="prev" title="Implement tiled-Based indirect bloom in CryEngine">
+                  <i class="fa fa-angle-left"></i> Implement tiled-Based indirect bloom in CryEngine
                 </a>
             </div>
             <div class="post-nav-item">
