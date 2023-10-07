@@ -1,10 +1,10 @@
 ---
-title: CryEngine PostProcess:Tiled Based Bloom Using Indirect Compute
+title: Implement tiled-Based indirect bloom in CryEngine
 date: 2023-07-30 23:08:25
 tags:
 ---
 
-The complexity of postprocess effects varies depending on the screen tile they are applied to. For example, we can only take one sample(disable blur) for pixels whose velocity is relatively low using branch operation. However, dynamic branch operation on the GPU is costly since we cannot ensure that multiple threads don't diverge.
+The complexity of postprocess effects varies depending on the screen tile they are applied to. For example, we can only take one sample(disable blur) for pixels whose velocity is relatively low using branching. However, dynamic branching on the GPU is costly since we cannot ensure that multiple threads don't cause divergence.
 
 The probability of divergence will be significantly reduced if different shaders can be executed on different screen tiles. Therefore, the problem is how to dispatch different shaders on various tiles. 
 
@@ -14,13 +14,13 @@ This article will take the bloom pass as an example of implementing the tile-bas
 
 The bloom algorithm is based on the implementation of CryEngine in this demo. So, we are going to discuss the implementation of CryEngine first. There are three parts to CryEngine's bloom algorithm. The first part is downsampling. CryEngine takes two passes to downsample the render target. The output of the downsample is a quarter-resolution render target relative to the original RT. Then, CryEngine performs a Gaussian blur with a quarter-resolution render target. In this step, CE takes four passes to blur the source texture: two for vertical and two for horizontal. Each pass samples the texture 16 times, so the total number of samples is 64 * Resolution! Finally, CE performs a lerp between scene color and bloom results as the result in the tone mapping pass.
 
-Here is the flow graph of tiled-based bloom algorithm:
+What we are going to do is optimize its sample count. Here is the flow graph of tiled-based bloom algorithm:
 
 ![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/flowinfo2.jpg)
 
-Step1.Mask screen tiles contain pixels whose luminance exceeds the threshold.
+**Step1.Mask screen tiles contain pixels whose luminance exceeds the threshold.**
 
-Each tile corresponds to a dispatch group and contains 8x8 pixels, which correspond to 8x8 threads. We use a group shared unit array to record tile luminance info. 
+Each tile corresponds to a dispatch group with 8x8 threads and contains 8x8 pixels. We use a group shared unit array to record group luminance info. 
 
 ```cpp
 groupshared uint MaskInfo[GROUP_SIZE_X*GROUP_SIZE_Y*1];
@@ -34,7 +34,7 @@ if(Luminance > BloomThreshlod)
 
 ![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/maskbuffer2.jpg)
 
-Then, perform parallel reduction within each thread block. As a result, we will get a mask buffer with the size of one eighth of the input bloom texture.
+Then, perform parallel reduction within each thread block to determine if this tile contains at least one pixel that exceeds the threshold. As a result, we will get a mask buffer with the size of one eighth of the input bloom texture.
 
 ```cpp
 GroupMemoryBarrierWithGroupSync();
@@ -65,7 +65,9 @@ if(GroupThreadIndex == 0)
 }
 ```
 
-Step2.Record the tile index and calculate the number of tiles that will perform the Gaussian blur. The results will be used as indirect arguments in the next step.
+**Step2.Record the tile index and calculate the number of tiles that will perform the Gaussian blur.**
+
+The results will be used as indirect arguments in the next step.
 
 The kernel size of the first two Gaussian blur passes is 7 and each member of the mask buffer represents 8x8 pixels. Therefore, the tile being masked will affect the 3x3 tiles around it. 
 
@@ -165,40 +167,15 @@ The red blocks are the tiles that performed Gaussian blur in the first two passe
 
 Repeat step 2. We will get all the parameters needed in the Gaussian blur pass.
 
-Here is the source code for setting the compute shader parameter:
-```cpp
-	for (int32 Index = 0; Index < 2; Index++)
-	{
-		m_passBloomTileIndexGen[Index]->SetTechnique(CShaderMan::s_shBloomSetup, CCryNameTSCRC("BloomTileIndexGen"), Index == 0 ? g_HWSR_MaskBit[HWSR_SAMPLE0] : 0);
+**Step3. Dispatch indirect compute shader and perform Gaussian blur.**
 
-		m_passBloomTileIndexGen[Index]->SetOutputUAV(0, &m_tileIndexBuffer[Index]);
-		m_passBloomTileIndexGen[Index]->SetOutputUAV(1, &m_dispatchIndirectCount[Index]);
-
-		if (Index == 0)
-		{
-			m_passBloomTileIndexGen[Index]->SetOutputUAV(2, &m_tileBloomMaskBuffer[1]);
-		}
-
-		m_passBloomTileIndexGen[Index]->SetBuffer(0, &m_tileBloomMaskBuffer[Index]);
-
-		m_passBloomTileIndexGen[Index]->BeginConstantUpdate();
-		m_passBloomTileIndexGen[Index]->SetConstant(CCryNameR("MaskBufferSize"), maskBufferSize[Index]);
-
-		m_passBloomTileIndexGen[Index]->SetDispatchSize(dispatchSizeIndexGen[Index].x, dispatchSizeIndexGen[Index].y, 1);
-		m_passBloomTileIndexGen[Index]->PrepareResourcesForUse(GetDeviceObjectFactory().GetCoreCommandList());
-
-		SScopedComputeCommandList computeCommandList(bAsynchronousCompute);
-		m_passBloomTileIndexGen[Index]->Execute(computeCommandList);
-	}
-```
-
-Step3. Dispatch indirect compute shader and perform Gaussian blur.
+The dispatch size is (12,1,1) in this example.
 
 ```cpp
 m_passBloom[IndexPass][IndexAxis]->SetDispatchIndirectArgs(&m_dispatchIndirectCount[IndexPass], 0);
 ```
 
-Get the index for those tiles performing Gaussian blur and calculate the global UV coordinates based on the tile index.
+Get the index for those tiles performing Gaussian blur indexed by GroupID from the tile index buffer and calculate the global UV coordinates based on the tile index.
 
 ```cpp
 uint TileIndex = BloomFinal_TileInfoUAV.Load(GroupID.x).x;
@@ -224,7 +201,34 @@ Finally, blur the input texture. Here is the code copied from CryEngine's Gaussi
 	BloomFinal_OutputUAV[UVCoord] = float4(vColor,1.0);
 ```
 
+As Cryengine does not support indirect compute shaders, we must expand its renderer to support them.
+
+```cpp
+void CDeviceComputeCommandInterfaceImpl::DispatchIndirectImpl(const CDeviceBuffer* pBuffer, uint32 Offset)
+{
+	const CDeviceResourceLayout_Vulkan* pVkLayout = reinterpret_cast<const CDeviceResourceLayout_Vulkan*>(m_computeState.pResourceLayout.cachedValue);
+
+	ApplyPendingBindings(GetVKCommandList()->GetVkCommandList(), pVkLayout->GetVkPipelineLayout(), VK_PIPELINE_BIND_POINT_COMPUTE, m_computeState.custom.pendingBindings);
+	m_computeState.custom.pendingBindings.Reset();
+
+	GetVKCommandList()->PendingResourceBarriers();
+	vkCmdDispatchIndirect(GetVKCommandList()->GetVkCommandList(), pBuffer->GetBuffer()->GetHandle(), Offset);
+}
+```
+
+This is the Vulkan capture result of Renderdoc.
+
 ![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/vulkanresult.jpg)
+
+|  | Renderdoc result |
+| :-: | :-: |
+| bloom input |![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/20230812213557.png)|
+| bloom output|![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/20230812213642.png)|
+| tone mapping output|![](https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/bloomresultj.jpg)|
+
+
+
+
 
 
 
