@@ -384,7 +384,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-10-07 23:50:24" itemprop="dateModified" datetime="2023-10-07T23:50:24+08:00">2023-10-07</time>
+      <time title="Modified: 2023-10-08 21:21:24" itemprop="dateModified" datetime="2023-10-08T21:21:24+08:00">2023-10-08</time>
     </span>
 
   
@@ -494,6 +494,47 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">uint ObjectShadowDepth = (ShadowScreenPOS.z)* (<span class="number">1</span>&lt;&lt;<span class="number">30</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">float</span> <span class="title">ComputeShadowFactor</span><span class="params">(float2 UVShadowSpace ,uint ObjectShadowDepth , uint Bias)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    uint2 TileIndexXY = <span class="built_in">uint2</span>(UVShadowSpace * PageNum <span class="comment">/*- 0.5f*/</span>);</span><br><span class="line">    uint PageTableIndex = PagetableInfos[TileIndexXY].x;</span><br><span class="line"></span><br><span class="line">    uint PhysicalIndexX = PageTableIndex % <span class="built_in">uint</span>(PhysicalTileWidthNum);</span><br><span class="line">    uint PhysicalIndexY = PageTableIndex / <span class="built_in">uint</span>(PhysicalTileWidthNum);</span><br><span class="line"></span><br><span class="line">    float2 SubTileUV = (UVShadowSpace * PageNum) - <span class="built_in">uint2</span>(UVShadowSpace * PageNum);</span><br><span class="line">    float2 ShadowDepthPos = <span class="built_in">float2</span>(PhysicalIndexX,PhysicalIndexY) + SubTileUV; </span><br><span class="line">    ShadowDepthPos/=PhysicalTileWidthNum;</span><br><span class="line">    ShadowDepthPos*=PhysicalSize;</span><br><span class="line"></span><br><span class="line">    uint ShadowDepth = PhysicalShadowDepthTexture[<span class="built_in">uint2</span>(ShadowDepthPos)].x;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>((ObjectShadowDepth + Bias )&lt; ShadowDepth) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1.0f</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0.0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/mask.jpg"></p>
+<h2 id="Future-Work"><a href="#Future-Work" class="headerlink" title="Future Work"></a>Future Work</h2><p>1.Shadow Cache<br>We can cache the shadow page if the camera does not change much, which reduces the draw call executed. Culling dynamic objects at the GPU culling stage. If its corresponding shadow tiles are masked as CACHED, change the tile flag to UNCACHED. After that, cull static objects. If its corresponding tiles are masked as CACHED, cull this draw command and reuse the previous frame’s shadow project result.</p>
+<p>2.Virtual-SM clip map<br>We can decrease shadow quality based on the distance from the scene position to the camera. Physical shadow tiles have the same resolution, but their corresponding scene area is different, tiles further from the center correspond to larger areas.</p>
+<p>3.Per-pixel projection<br>Currently, we use per-page projection for virtual-SM implementation. The disadvantage of this solution is that each object may be rendered many times (total render times &#x3D; object number * tiles number covered). We can transfer the per-page projection method to the per-pixel projection method. For shadow projection pixels, we perform a virtual to physical coordinate transfer, and write to the corresponding position.</p>
+<p>4.DX12 implementaion</p>
+<p>The virtual-SM implementation in Cryengine only supports Vulkan API, but we can transfer it to the DX12 implementation.Here is the corresponding items between Vulkan and Direct12:</p>
+<table>
+<thead>
+<tr>
+<th>Vulkan</th>
+<th>DX12</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VkIndirectCommandsLayoutTokenNV</td>
+<td>D3D12_INDIRECT_ARGUMENT_DESC</td>
+</tr>
+<tr>
+<td>VK_INDIRECT_COMMANDS_TOKEN_TYPE_INDEX_BUFFER_NV</td>
+<td>D3D12_INDIRECT_ARGUMENT_TYPE_INDEX_BUFFER_VIEW</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>VkDeviceAddress</td>
+<td>D3D12_GPU_VIRTUAL_ADDRESS</td>
+</tr>
+<tr>
+<td>VkBindIndexBufferIndirectCommandNV</td>
+<td>D3D12_INDEX_BUFFER_VIEW</td>
+</tr>
+<tr>
+<td>VkDrawIndexedIndirectCommand</td>
+<td>D3D12_DRAW_INDEXED_ARGUMENTS</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
 
       
     </div>
