@@ -19,15 +19,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lvcheng1229.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="CryEngine RHI:Vulkan RayTracing">
+    <meta name="description" content="This blog will introduce the personal Vulkan bindless ray tracing implementation in CryEngine and discuss the hardware architecture and theory behind real-time ray tracing. This article is divided int">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CryEngine RHI:Vulkan RayTracing">
+<meta property="og:title" content="Bindless Vulkan RayTraing In CryEngine[Part1]">
 <meta property="og:url" content="https://lvcheng1229.github.io/2023/08/01/cerhivkrt/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="CryEngine RHI:Vulkan RayTracing">
+<meta property="og:description" content="This blog will introduce the personal Vulkan bindless ray tracing implementation in CryEngine and discuss the hardware architecture and theory behind real-time ray tracing. This article is divided int">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-07-31T16:08:24.000Z">
-<meta property="article:modified_time" content="2023-07-31T16:08:40.688Z">
+<meta property="article:modified_time" content="2023-12-01T04:41:21.292Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
@@ -36,10 +36,10 @@
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/08/01/cerhivkrt/","path":"2023/08/01/cerhivkrt/","title":"CryEngine RHI:Vulkan RayTracing"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://lvcheng1229.github.io/2023/08/01/cerhivkrt/","path":"2023/08/01/cerhivkrt/","title":"Bindless Vulkan RayTraing In CryEngine[Part1]"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>CryEngine RHI:Vulkan RayTracing | Hexo</title>
+<title>Bindless Vulkan RayTraing In CryEngine[Part1] | Hexo</title>
   
 
 
@@ -91,7 +91,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
@@ -104,6 +104,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RayTracing-Acceleration-Structure"><span class="nav-number">1.</span> <span class="nav-text">RayTracing Acceleration Structure</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#A-Brief-Introduction"><span class="nav-number">1.1.</span> <span class="nav-text">A Brief Introduction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BVH"><span class="nav-number">1.1.1.</span> <span class="nav-text">BVH</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Two-Level-Acceleration-Structure"><span class="nav-number">1.1.2.</span> <span class="nav-text">Two-Level Acceleration Structure</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#The-Trade-Offs-of-The-Structure-Building"><span class="nav-number">1.1.3.</span> <span class="nav-text">The Trade-Offs of The Structure Building</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tips"><span class="nav-number">1.1.4.</span> <span class="nav-text">Tips</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deffered"><span class="nav-number">1.1.5.</span> <span class="nav-text">deffered</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ray-Transversal-And-Intersection"><span class="nav-number">1.1.6.</span> <span class="nav-text">Ray Transversal And Intersection</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Implementation-Details"><span class="nav-number">1.2.</span> <span class="nav-text">Implementation Details</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Extended"><span class="nav-number">1.3.</span> <span class="nav-text">Extended</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -116,7 +117,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -157,12 +158,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="CryEngine RHI:Vulkan RayTracing | Hexo">
+      <meta itemprop="name" content="Bindless Vulkan RayTraing In CryEngine[Part1] | Hexo">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          CryEngine RHI:Vulkan RayTracing
+          Bindless Vulkan RayTraing In CryEngine[Part1]
         </h1>
 
         <div class="post-meta-container">
@@ -172,9 +173,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-08-01 00:08:24 / Modified: 00:08:40" itemprop="dateCreated datePublished" datetime="2023-08-01T00:08:24+08:00">2023-08-01</time>
+      <time title="Created: 2023-08-01 00:08:24" itemprop="dateCreated datePublished" datetime="2023-08-01T00:08:24+08:00">2023-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-12-01 12:41:21" itemprop="dateModified" datetime="2023-12-01T12:41:21+08:00">2023-12-01</time>
     </span>
 
   
@@ -186,8 +193,19 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>CryEngine RHI:Vulkan RayTracing</p>
-
+    <div class="post-body" itemprop="articleBody"><p>This blog will introduce the personal Vulkan bindless ray tracing implementation in CryEngine and discuss the hardware architecture and theory behind real-time ray tracing. This article is divided into four parts: Building the Acceleration Structure, RayTracing Shaders, RayTracing Pipeline and Bindless Ray Tracing.</p>
+<p>Before DXR and Vulkan Ray Tracing API, NVIDIA had already developed a ray tracing API called Optix around 2009. Optix is similar to the other two APIs in some respects. By the way, I discovered Optix before Vulkan RayTracing too, since my undergraduate thesis is based on Optix. Almost ten years after the release of Optix, Microsoft released DXR in 2018 and Vulkan TSG released Vulkan RayTracing in 2020. Vulkan and DXR ray tracing are same in many parts. Unlike Optix, DXR and Vulkan RayTracing are designed for real-time rendering pipelines. They can share resources between raytracing and rasterization pipelines, which has advantages in hybrid rendering.</p>
+<p>Compared to traditional rasterization-based rendering, raytracing is more direct and can generate a more realistic image.</p>
+<p>todo@todo@</p>
+<h1 id="RayTracing-Acceleration-Structure"><a href="#RayTracing-Acceleration-Structure" class="headerlink" title="RayTracing Acceleration Structure"></a>RayTracing Acceleration Structure</h1><p>“A Brief Introduction” part provides a brief introduction to acceleration structure, such as constructing acceleration structure, ray intersection and ray transversal. “Implementation Details” part dicribes the implementation details of building the acceleration structure in CryEngine. “Extended” part discusses low-level  possible hardware implementations, such as BVH construction schemes (LBVH, Binding SAH,etc) and ray transversal optimization and methods.</p>
+<h2 id="A-Brief-Introduction"><a href="#A-Brief-Introduction" class="headerlink" title="A Brief Introduction"></a>A Brief Introduction</h2><h3 id="BVH"><a href="#BVH" class="headerlink" title="BVH"></a>BVH</h3><p>Both DXR and Vulkan RayTracing use bounding volume hierarchies (BVH) for acceleration, which is also commonly used for offline ray tracing. BVH is an object partition data structure. It has more advantages than space partition (BSP-Tree,Octree,etc). One advantage of BVH is that the scene can be rebuilt easily for dynamic objects: just recompute the leaf node based on the current geometry. Additionally, the two-level acceleration structure employed in the current raytracing API can optimize rigid body animation further: only update the transform matrix without the expensive bottom-level acceleration structure update. Another advantage of BVH is that the maximum size used is known, as the number of leaves is limited.</p>
+<h3 id="Two-Level-Acceleration-Structure"><a href="#Two-Level-Acceleration-Structure" class="headerlink" title="Two-Level Acceleration Structure"></a>Two-Level Acceleration Structure</h3><p>Vulkan employs a two-level acceleration structure to accelerate scene transversal and ray intersections. The bottom-level acceleration structure (BLAS) contains a set of geometries. In the Vulkan API, we can set two types of geometries: <strong>triangles or procedural</strong>. The former type contains a set of triangles, that is to say, real vertex data and index data. Additionally, the BLAS with triangle geometry type contains AABB to encapsulate the geometry after it has been built. For the later geometry type, we should specify AABBs and the associated intersection function such as the ray-sphere test function. In practice, we <strong>prefer using triangle geometry</strong>, since both triangles and AABBs are hardware accelerated, but the procedural type involves additional user defined intersection functions in a shader, which is slower.</p>
+<p><strong>[IMAGE]</strong></p>
+<p>The top-level acceleration structure (TLAS) consists of instances that reference the BLAS. And each instance contains a transform. We can only update the instance transform of TLAS for rigid-body animation.</p>
+<h3 id="The-Trade-Offs-of-The-Structure-Building"><a href="#The-Trade-Offs-of-The-Structure-Building" class="headerlink" title="The Trade-Offs of The Structure Building"></a>The Trade-Offs of The Structure Building</h3><p>The driver is responsible for scheduling construction tasks after requesting the acceleration structure building. And the highly parallel work (calculate AABB, sorte) can accelerated by GPU. In addition, <strong>AS management (build&#x2F;updata) can be moved to an async compute queue</strong>, which could completely hide the cost in many cases. AS management is essentialy software-based work, which allows the driver to optimize its construction algorithm continuously.</p>
+<p>Vulkan exposed three build options to AS management:<br>For the PREFER_FAST_TRACE bit, the GPU should choose the algorithm with better runtime transversal efficiency.<br>For the PREFER_FAST_BUILD bit, the GPU should choose the algorithm with a faster construction rate.<br>For the default option, GPU should choose a compromise solution with a balance between trace and build speed.<br>Generally, we <strong>employ PREFER_FAST_BUILD for BLAS, as well as PREFER_FAST_TRACE for TLAS</strong>.<br>In the later extend part, we will discuss three algorithms corresponding to PREFER_FAST_TRACE, PREFER_FAST_BUILD and default option.</p>
+<p>Ray tracing has more geometries in GPU memory than traditional rasterization methods. Vulkan has provided additional options for compacting the acceleration structure. Generally, we only compact BLAS, since it has more geometry data than TLAS</p>
+<h3 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h3><h3 id="deffered"><a href="#deffered" class="headerlink" title="deffered"></a>deffered</h3><h3 id="Ray-Transversal-And-Intersection"><a href="#Ray-Transversal-And-Intersection" class="headerlink" title="Ray Transversal And Intersection"></a>Ray Transversal And Intersection</h3><h2 id="Implementation-Details"><a href="#Implementation-Details" class="headerlink" title="Implementation Details"></a>Implementation Details</h2><h2 id="Extended"><a href="#Extended" class="headerlink" title="Extended"></a>Extended</h2>
     </div>
 
     
@@ -200,8 +218,8 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/2023/08/01/cerhivk/" rel="prev" title="CryEngine RHI:Vulkan RHI">
-                  <i class="fa fa-angle-left"></i> CryEngine RHI:Vulkan RHI
+                <a href="/2023/08/01/cesvsm/" rel="prev" title="GPU-Driven Virtual Shadow Map In CryEngine">
+                  <i class="fa fa-angle-left"></i> GPU-Driven Virtual Shadow Map In CryEngine
                 </a>
             </div>
             <div class="post-nav-item">

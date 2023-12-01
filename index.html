@@ -112,7 +112,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -226,7 +226,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/08/01/cerhivkrt/" class="post-title-link" itemprop="url">CryEngine RHI:Vulkan RayTracing</a>
+          <a href="/2023/08/01/cerhivkrt/" class="post-title-link" itemprop="url">Bindless Vulkan RayTraing In CryEngine[Part1]</a>
         </h2>
 
         <div class="post-meta-container">
@@ -236,9 +236,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2023-08-01 00:08:24 / Modified: 00:08:40" itemprop="dateCreated datePublished" datetime="2023-08-01T00:08:24+08:00">2023-08-01</time>
+      <time title="Created: 2023-08-01 00:08:24" itemprop="dateCreated datePublished" datetime="2023-08-01T00:08:24+08:00">2023-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-12-01 12:41:21" itemprop="dateModified" datetime="2023-12-01T12:41:21+08:00">2023-12-01</time>
     </span>
 
   
@@ -251,78 +257,19 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>CryEngine RHI:Vulkan RayTracing</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://lvcheng1229.github.io/2023/08/01/cerhivk/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Hexo">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/08/01/cerhivk/" class="post-title-link" itemprop="url">CryEngine RHI:Vulkan RHI</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-      
-
-      <time title="Created: 2023-08-01 00:07:29 / Modified: 00:08:06" itemprop="dateCreated datePublished" datetime="2023-08-01T00:07:29+08:00">2023-08-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>CryEngine RHI:Vulkan RHI</p>
-
+          <p>This blog will introduce the personal Vulkan bindless ray tracing implementation in CryEngine and discuss the hardware architecture and theory behind real-time ray tracing. This article is divided into four parts: Building the Acceleration Structure, RayTracing Shaders, RayTracing Pipeline and Bindless Ray Tracing.</p>
+<p>Before DXR and Vulkan Ray Tracing API, NVIDIA had already developed a ray tracing API called Optix around 2009. Optix is similar to the other two APIs in some respects. By the way, I discovered Optix before Vulkan RayTracing too, since my undergraduate thesis is based on Optix. Almost ten years after the release of Optix, Microsoft released DXR in 2018 and Vulkan TSG released Vulkan RayTracing in 2020. Vulkan and DXR ray tracing are same in many parts. Unlike Optix, DXR and Vulkan RayTracing are designed for real-time rendering pipelines. They can share resources between raytracing and rasterization pipelines, which has advantages in hybrid rendering.</p>
+<p>Compared to traditional rasterization-based rendering, raytracing is more direct and can generate a more realistic image.</p>
+<p>todo@todo@</p>
+<h1 id="RayTracing-Acceleration-Structure"><a href="#RayTracing-Acceleration-Structure" class="headerlink" title="RayTracing Acceleration Structure"></a>RayTracing Acceleration Structure</h1><p>“A Brief Introduction” part provides a brief introduction to acceleration structure, such as constructing acceleration structure, ray intersection and ray transversal. “Implementation Details” part dicribes the implementation details of building the acceleration structure in CryEngine. “Extended” part discusses low-level  possible hardware implementations, such as BVH construction schemes (LBVH, Binding SAH,etc) and ray transversal optimization and methods.</p>
+<h2 id="A-Brief-Introduction"><a href="#A-Brief-Introduction" class="headerlink" title="A Brief Introduction"></a>A Brief Introduction</h2><h3 id="BVH"><a href="#BVH" class="headerlink" title="BVH"></a>BVH</h3><p>Both DXR and Vulkan RayTracing use bounding volume hierarchies (BVH) for acceleration, which is also commonly used for offline ray tracing. BVH is an object partition data structure. It has more advantages than space partition (BSP-Tree,Octree,etc). One advantage of BVH is that the scene can be rebuilt easily for dynamic objects: just recompute the leaf node based on the current geometry. Additionally, the two-level acceleration structure employed in the current raytracing API can optimize rigid body animation further: only update the transform matrix without the expensive bottom-level acceleration structure update. Another advantage of BVH is that the maximum size used is known, as the number of leaves is limited.</p>
+<h3 id="Two-Level-Acceleration-Structure"><a href="#Two-Level-Acceleration-Structure" class="headerlink" title="Two-Level Acceleration Structure"></a>Two-Level Acceleration Structure</h3><p>Vulkan employs a two-level acceleration structure to accelerate scene transversal and ray intersections. The bottom-level acceleration structure (BLAS) contains a set of geometries. In the Vulkan API, we can set two types of geometries: <strong>triangles or procedural</strong>. The former type contains a set of triangles, that is to say, real vertex data and index data. Additionally, the BLAS with triangle geometry type contains AABB to encapsulate the geometry after it has been built. For the later geometry type, we should specify AABBs and the associated intersection function such as the ray-sphere test function. In practice, we <strong>prefer using triangle geometry</strong>, since both triangles and AABBs are hardware accelerated, but the procedural type involves additional user defined intersection functions in a shader, which is slower.</p>
+<p><strong>[IMAGE]</strong></p>
+<p>The top-level acceleration structure (TLAS) consists of instances that reference the BLAS. And each instance contains a transform. We can only update the instance transform of TLAS for rigid-body animation.</p>
+<h3 id="The-Trade-Offs-of-The-Structure-Building"><a href="#The-Trade-Offs-of-The-Structure-Building" class="headerlink" title="The Trade-Offs of The Structure Building"></a>The Trade-Offs of The Structure Building</h3><p>The driver is responsible for scheduling construction tasks after requesting the acceleration structure building. And the highly parallel work (calculate AABB, sorte) can accelerated by GPU. In addition, <strong>AS management (build&#x2F;updata) can be moved to an async compute queue</strong>, which could completely hide the cost in many cases. AS management is essentialy software-based work, which allows the driver to optimize its construction algorithm continuously.</p>
+<p>Vulkan exposed three build options to AS management:<br>For the PREFER_FAST_TRACE bit, the GPU should choose the algorithm with better runtime transversal efficiency.<br>For the PREFER_FAST_BUILD bit, the GPU should choose the algorithm with a faster construction rate.<br>For the default option, GPU should choose a compromise solution with a balance between trace and build speed.<br>Generally, we <strong>employ PREFER_FAST_BUILD for BLAS, as well as PREFER_FAST_TRACE for TLAS</strong>.<br>In the later extend part, we will discuss three algorithms corresponding to PREFER_FAST_TRACE, PREFER_FAST_BUILD and default option.</p>
+<p>Ray tracing has more geometries in GPU memory than traditional rasterization methods. Vulkan has provided additional options for compacting the acceleration structure. Generally, we only compact BLAS, since it has more geometry data than TLAS</p>
+<h3 id="Tips"><a href="#Tips" class="headerlink" title="Tips"></a>Tips</h3><h3 id="deffered"><a href="#deffered" class="headerlink" title="deffered"></a>deffered</h3><h3 id="Ray-Transversal-And-Intersection"><a href="#Ray-Transversal-And-Intersection" class="headerlink" title="Ray Transversal And Intersection"></a>Ray Transversal And Intersection</h3><h2 id="Implementation-Details"><a href="#Implementation-Details" class="headerlink" title="Implementation Details"></a>Implementation Details</h2><h2 id="Extended"><a href="#Extended" class="headerlink" title="Extended"></a>Extended</h2>
       
     </div>
 
@@ -366,7 +313,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/2023/08/01/cesvsm/" class="post-title-link" itemprop="url">Implement virtual shadow map in CryEngine</a>
+          <a href="/2023/08/01/cesvsm/" class="post-title-link" itemprop="url">GPU-Driven Virtual Shadow Map In CryEngine</a>
         </h2>
 
         <div class="post-meta-container">
@@ -384,7 +331,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-10-08 21:21:24" itemprop="dateModified" datetime="2023-10-08T21:21:24+08:00">2023-10-08</time>
+      <time title="Modified: 2023-11-26 23:04:27" itemprop="dateModified" datetime="2023-11-26T23:04:27+08:00">2023-11-26</time>
     </span>
 
   
@@ -397,9 +344,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>Real-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which decreases game reality. The most used real-time shadow technique is shadow mapping. This technique causes two artifacts: shadow acne and aliasing. The reason behind these artifacts is that many pixels on the screen correspond to one texel on the shadow map. </p>
-<p>Ideally, we can solve these problems by allocating an infinite shadow map texture. However, we can’t do this, since video memory is limited. For real-time shadow rendering, most games use CSM (cascade shadow map) to achieve a balance between shadow map quality and game performance. The key idea of CSM is to render a high-quality shadow map for the scene closer to the camera and decrease the shadow quality for further objects.</p>
-<p>Virtual shadow map is a possible solution to solving these problems. The main points of Virtual-SM are:1. Only render shadow casters whose shadow can be seen by the camera. 2. Assume the video memory and shadow map texture is large enough (like virtual memory). 3. Manage the scene’s objects and dispatch draw commands on the GPU.</p>
+          <p>This blog is a personal implementation of Virtual Shadow Map In CryEngine.</p>
+<h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>Real-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which decreases game reality. The most used real-time shadow technique is shadow mapping. This technique causes two artifacts: shadow acne and aliasing. The reason behind these artifacts is that many pixels on the screen correspond to one texel on the shadow map. </p>
+<p>Ideally, we can solve these problems by allocating an infinite shadow map texture. However, we can’t do this, since video memory is limited. For real-time shadow rendering, most games employ CSM (cascade shadow map) to achieve a balance between shadow map quality and game performance. The key idea of CSM is to render a high-quality shadow map for the scene closer to the camera and decrease the shadow quality for further objects.</p>
+<p>Virtual shadow map is a possible solution to solving these problems. The key idea of Virtual-SM are:1. Only render shadow casters whose shadow can be seen by the camera. 2. Assume the video memory and shadow map texture is large enough (like virtual memory). 3. Manage the scene’s objects and dispatch draw commands on the GPU.</p>
 <h1 id="Related-techniques-used-in-Virtual-SM"><a href="#Related-techniques-used-in-Virtual-SM" class="headerlink" title="Related techniques used in Virtual-SM"></a>Related techniques used in Virtual-SM</h1><p>Before discussing Virtual-SM, we will introduce some related techniques: virtual texture and GPU-driven rendering, since Virtual-SM’s idea is similar to the above techniques.</p>
 <h2 id="Virtual-Texture"><a href="#Virtual-Texture" class="headerlink" title="Virtual Texture"></a>Virtual Texture</h2><p>The virtual texture is proposed based on a technique called mega texture. Like virtual memory in OS, virtual texture assumes the texture resolution is large enough and does not require the entire texture to be loaded. Instead, we only need to load the part of the texture that is actually used in the current view.</p>
 <p>Virtual texture has many variations depending on the situation: streaming virtual texture (SVT), run-time virtual texture (RVT), and its improved version adaptive virtual texture (AVT). The ideas behind SVT&#x2F;RVT&#x2F;AVT are also contained in the Virtual-SM.</p>
@@ -408,7 +356,7 @@
 <p>Compared to mipmap texture streaming, SVT has the following advantages:</p>
 <p>1.Save video memory (we only load the texture tiles required).<br>2.Finer granularity (the minimum load unit is texture tile rather than texture mip).<br>3.More accurately (mip texture streaming is computed on CPU and will get wrong results for complex texture types, such as Atlas. SVT is computed on the GPU based on the ddx&#x2F;ddy operation).</p>
 <h3 id="Runtime-Virtual-Texture"><a href="#Runtime-Virtual-Texture" class="headerlink" title="Runtime Virtual Texture"></a>Runtime Virtual Texture</h3><p>The texture content of SVT is loaded from the disk, that is, generated offline. And RVT generates texture content at runtime. It is most used in terrain rendering. The key idea of RVT in terrain rendering is caching the texture blend result into a runtime virtual texture. This has several advantages compared to the SVT and traditional splat map method:</p>
-<p>1.The texture size is too large to store on the disk if we use SVT to blend the terrain texture offline<br>2.We need to sample many times for terrain textures (normal &#x2F; base color&#x2F;splat map) for the traditional splat map method. There are only four channels in a splat map, so we can only record four terrain weights, which limits the art effect.<br>3.RVT has better performance than the splat map method, and the texture size stored on disk is smaller than SVT. In other words, RVT is a compromise solution to SVT and splat map.</p>
+<p>1.The texture size is too large to store on the disk if we employ SVT to blend the terrain texture offline<br>2.We need to sample many times for terrain textures (normal &#x2F; base color&#x2F;splat map) for the traditional splat map method. There are only four channels in a splat map, so we can only record four terrain weights, which limits the art effect.<br>3.RVT has better performance than the splat map method, and the texture size stored on disk is smaller than SVT. In other words, RVT is a compromise solution to SVT and splat map.</p>
 <h3 id="Adaptive-Virtual-Texture"><a href="#Adaptive-Virtual-Texture" class="headerlink" title="Adaptive Virtual Texture"></a>Adaptive Virtual Texture</h3><p>Adaptive virtual texture is an improved version based on the RVT. We will get a large indirect table if the terrain is wide enough. AVT solves this problem by allocating different VT sizes depending on camera distance.</p>
 <h2 id="GPU-Driven-Rendering"><a href="#GPU-Driven-Rendering" class="headerlink" title="GPU-Driven Rendering"></a>GPU-Driven Rendering</h2><p>In virtual shadow map, each shadow map tile corresponds to a frustum. This means that Virtual-SM will perform culling many times, which is unaffordable for the CPU. GPU-driven rendering can solve these problems by moving culling and submitting tasks from CPU to GPU. Let’s introduce the basic GPU-driven pipeline first. </p>
 <p>GPU-driven rendering pipeline has three parts: preparing GPU data, culling on GPU, and work submission.</p>
@@ -462,7 +410,7 @@
 <h4 id="Vulkan-GLSL"><a href="#Vulkan-GLSL" class="headerlink" title="Vulkan GLSL"></a>Vulkan GLSL</h4><p>Here is an example of a buffer device address. We get the GL_EXT_buffer_reference extension which allows us to declare buffer blocks not as SSBOs, but faux pointer types instead.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#extension GL_EXT_buffer_reference : enable</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">layout</span>(buffer_reference, buffer_reference_align=<span class="number">16</span>, scalar) readonly buffer ExamplelBuffer &#123;</span><br><span class="line">  BufferData  data;</span><br><span class="line">&#125;;</span><br><span class="line">  </span><br><span class="line"><span class="built_in">layout</span>(push_constant, scalar) uniform pushConstants &#123;</span><br><span class="line">  <span class="built_in">layout</span>(offset=<span class="number">8</span>)</span><br><span class="line">  ExamplelBuffer v;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>buffer_reference tags the type accordingly, and buffer_reference_align is used to mark that any pointer which is of this type is at least 16 bytes aligned. </p>
-<p>Finally, we place the buffer reference inside the push constant. Buffer_reference can also be placed inside SSBO or UBO. The reason we use push constant is that Device Generated Commands discussed later only support push constant.</p>
+<p>Finally, we place the buffer reference inside the push constant. Buffer_reference can also be placed inside SSBO or UBO. The reason we employ push constant is that Device Generated Commands discussed later only support push constant.</p>
 <h3 id="Vulkan-NV-device-generated-commands"><a href="#Vulkan-NV-device-generated-commands" class="headerlink" title="Vulkan NV device-generated commands"></a>Vulkan NV device-generated commands</h3><p>One problem with existing indirect techniques is that the command buffer must be prepared for the worst-case scenario on the CPU. You may also require more memory than necessary for the distribution of indirect commands, given that it is not known which state buckets they will end up in. To solve these problems, this extension adds further capabilities, such as the ability to switch between different shaders.</p>
 <p>The following steps generate commands on the device:</p>
 <p>1.Define a sequence of commands to be generated, using a VkIndirectCommandsLayoutNV object.<br>2.For the ability to change shaders, create the graphics pipelines with VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV and then create an aggregate graphics pipeline that imports those pipelines as graphics shader groups using VkGraphicsPipelineShaderGroupsCreateInfoNV, which extends VkGraphicsPipelineCreateInfo.<br>3.Create a preprocess buffer based on sizing information acquired using vkGetGeneratedCommandsMemoryRequirementsNV.<br>4.Fill the input buffers for the generation step and set up the VkGeneratedCommandsInfoNV struct accordingly. It is used in preprocessing as well as execution. Some commands require buffer addresses, which can be acquired using vkGetBufferDeviceAddress.<br>5.Run the execution via vkCmdExecuteGeneratedCommandsNV.</p>
@@ -476,7 +424,7 @@
 <p>For each RHI layout token, convert it to Vulkan Layout token. Push constant needs to be handled specially, we should assign VkPipelineLayout to member pushconstantPipelineLayout.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;VkIndirectCommandsLayoutTokenNV&gt; inputInfos;</span><br><span class="line"></span><br><span class="line">uint32 offsetGloabl = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> iter = desc.m_indirectLayoutTokens.<span class="built_in">begin</span>(); iter != desc.m_indirectLayoutTokens.<span class="built_in">end</span>(); iter++)</span><br><span class="line">&#123;</span><br><span class="line">	VkIndirectCommandsTokenTypeNV tokenTypeNV = <span class="built_in">ConvertToVKIndirectCmdType</span>(iter-&gt;m_tokenType);</span><br><span class="line">	VkIndirectCommandsLayoutTokenNV input = &#123; VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_NV, <span class="number">0</span>,tokenTypeNV &#125;;</span><br><span class="line">	input.stream = <span class="number">0</span>;</span><br><span class="line">	input.offset = offsetGloabl;</span><br><span class="line"></span><br><span class="line">	offsetGloabl += <span class="built_in">ConvertToTTSize</span>(iter-&gt;m_tokenType, iter-&gt;m_pcSize);</span><br><span class="line">       </span><br><span class="line">       ......</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (tokenTypeNV == VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NV)</span><br><span class="line">	&#123;</span><br><span class="line">		input.pushconstantPipelineLayout = <span class="built_in">static_cast</span>&lt;<span class="type">const</span> CDeviceResourceLayout_Vulkan*&gt;(iter-&gt;m_pDeviceResourceLayout.<span class="built_in">get</span>())-&gt;<span class="built_in">GetVkPipelineLayout</span>();</span><br><span class="line">		......</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	inputInfos.<span class="built_in">push_back</span>(input);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">uint32_t</span> interleavedStride = offsetGloabl;</span><br><span class="line"></span><br><span class="line">VkIndirectCommandsLayoutCreateInfoNV genInfo = &#123; VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_NV &#125;;</span><br><span class="line">genInfo.tokenCount = (<span class="type">uint32_t</span>)inputInfos.<span class="built_in">size</span>();</span><br><span class="line">genInfo.pTokens = inputInfos.<span class="built_in">data</span>();</span><br><span class="line">genInfo.streamCount = <span class="number">1</span>;</span><br><span class="line">genInfo.pStreamStrides = &amp;interleavedStride;</span><br><span class="line"></span><br><span class="line">VkResult result = VK_RESULT_MAX_ENUM;</span><br><span class="line"><span class="keyword">if</span> (Extensions::EXT_device_generated_commands::IsSupported)</span><br><span class="line">&#123;</span><br><span class="line">	result = Extensions::EXT_device_generated_commands::<span class="built_in">CmdCreateIndirectCommandsLayout</span>(m_pDevice-&gt;<span class="built_in">GetVkDevice</span>(), &amp;genInfo, <span class="literal">NULL</span>, &amp;indirectCmdsLayout);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>In addition, we use the interleaved command layout in Virtual-SM, which is an array of structures (AOS). It leads to generating dynamic commands on GPU more easily. DGC provides a structure of arrays (SoA) layout for compact, cache-friendly streams.</p>
+<p>In addition, we employ the interleaved command layout in Virtual-SM, which is an array of structures (AOS). It leads to generating dynamic commands on GPU more easily. DGC provides a structure of arrays (SoA) layout for compact, cache-friendly streams.</p>
 <p><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/image4-768x432.png"></p>
 <h4 id="Create-PSO-and-proprocess-buffer"><a href="#Create-PSO-and-proprocess-buffer" class="headerlink" title="Create PSO and proprocess buffer"></a>Create PSO and proprocess buffer</h4><p>For the ability to change shaders, create the graphics pipelines with VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV and then create an aggregate graphics pipeline that imports those pipelines as graphics shader groups using VkGraphicsPipelineShaderGroupsCreateInfoNV, which extends VkGraphicsPipelineCreateInfo.</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">VkGraphicsPipelineShaderGroupsCreateInfoNV groupsCreateInfo = &#123; VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_SHADER_GROUPS_CREATE_INFO_NV &#125;;</span><br><span class="line">&#123;</span><br><span class="line">	std::vector&lt;VkPipeline&gt; referencedPipelines;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">uint32_t</span> m = <span class="number">1</span>; m &lt; psoDesc.indirectPso.<span class="built_in">size</span>(); m++)</span><br><span class="line">	&#123;</span><br><span class="line">		referencedPipelines.<span class="built_in">push_back</span>(<span class="built_in">static_cast</span>&lt;CDeviceGraphicsPSO_Vulkan*&gt;(psoDesc.indirectPso[m])-&gt;<span class="built_in">GetVkPipeline</span>());</span><br><span class="line">	&#125;</span><br><span class="line">	groupsCreateInfo.pPipelines = referencedPipelines.<span class="built_in">data</span>();</span><br><span class="line">	groupsCreateInfo.pipelineCount = (<span class="type">uint32_t</span>)referencedPipelines.<span class="built_in">size</span>();</span><br><span class="line"></span><br><span class="line">	<span class="comment">//m = 0;</span></span><br><span class="line">	VkGraphicsShaderGroupCreateInfoNV shaderGroup = &#123; VK_STRUCTURE_TYPE_GRAPHICS_SHADER_GROUP_CREATE_INFO_NV &#125;;</span><br><span class="line">		</span><br><span class="line">    ......</span><br><span class="line">	groupsCreateInfo.groupCount = <span class="number">1u</span>;</span><br><span class="line">	groupsCreateInfo.pGroups = &amp;shaderGroup;</span><br><span class="line">	graphicsPipelineCreateInfo.pNext = &amp;groupsCreateInfo;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -496,7 +444,7 @@
 <p><img src="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/mask.jpg"></p>
 <h2 id="Future-Work"><a href="#Future-Work" class="headerlink" title="Future Work"></a>Future Work</h2><p>1.Shadow Cache<br>We can cache the shadow page if the camera does not change much, which reduces the draw call executed. Culling dynamic objects at the GPU culling stage. If its corresponding shadow tiles are masked as CACHED, change the tile flag to UNCACHED. After that, cull static objects. If its corresponding tiles are masked as CACHED, cull this draw command and reuse the previous frame’s shadow project result.</p>
 <p>2.Virtual-SM clip map<br>We can decrease shadow quality based on the distance from the scene position to the camera. Physical shadow tiles have the same resolution, but their corresponding scene area is different, tiles further from the center correspond to larger areas.</p>
-<p>3.Per-pixel projection<br>Currently, we use per-page projection for virtual-SM implementation. The disadvantage of this solution is that each object may be rendered many times (total render times &#x3D; object number * tiles number covered). We can transfer the per-page projection method to the per-pixel projection method. For shadow projection pixels, we perform a virtual to physical coordinate transfer, and write to the corresponding position.</p>
+<p>3.Per-pixel projection<br>Currently, we employ per-page projection for virtual-SM implementation. The disadvantage of this solution is that each object may be rendered many times (total render times &#x3D; object number * tiles number covered). We can transfer the per-page projection method to the per-pixel projection method. For shadow projection pixels, we perform a virtual to physical coordinate transfer, and write to the corresponding position.</p>
 <p>4.DX12 implementaion</p>
 <p>The virtual-SM implementation in Cryengine only supports Vulkan API, but we can transfer it to the DX12 implementation.Here is the corresponding items between Vulkan and Direct12:</p>
 <table>
