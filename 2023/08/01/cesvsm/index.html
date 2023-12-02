@@ -19,19 +19,19 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"lvcheng1229.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="This blog is a personal implementation of Virtual Shadow Map In CryEngine. AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear flo">
+    <meta name="description" content="This is a personal implementation of Virtual Shadow Map In CryEngine. AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GPU-Driven Virtual Shadow Map In CryEngine">
 <meta property="og:url" content="https://lvcheng1229.github.io/2023/08/01/cesvsm/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="This blog is a personal implementation of Virtual Shadow Map In CryEngine. AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear flo">
+<meta property="og:description" content="This is a personal implementation of Virtual Shadow Map In CryEngine. AbstractReal-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/VSM2.jpg">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/image4-768x432.png">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/VSM2.jpg">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/mask.jpg">
 <meta property="article:published_time" content="2023-07-31T16:06:36.000Z">
-<meta property="article:modified_time" content="2023-11-26T15:04:27.139Z">
+<meta property="article:modified_time" content="2023-12-01T04:46:05.880Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/lvcheng1229/lvcheng1229.github.io@main/PicGoImg/VSM2.jpg">
@@ -186,7 +186,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2023-11-26 23:04:27" itemprop="dateModified" datetime="2023-11-26T23:04:27+08:00">2023-11-26</time>
+      <time title="Modified: 2023-12-01 12:46:05" itemprop="dateModified" datetime="2023-12-01T12:46:05+08:00">2023-12-01</time>
     </span>
 
   
@@ -198,7 +198,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>This blog is a personal implementation of Virtual Shadow Map In CryEngine.</p>
+    <div class="post-body" itemprop="articleBody"><p>This is a personal implementation of Virtual Shadow Map In CryEngine.</p>
 <h1 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h1><p>Real-time shadow is an essential field of game development. Without real-time shadow, movable objects will appear floating on the ground and out of tune with the surrounding environment, which decreases game reality. The most used real-time shadow technique is shadow mapping. This technique causes two artifacts: shadow acne and aliasing. The reason behind these artifacts is that many pixels on the screen correspond to one texel on the shadow map. </p>
 <p>Ideally, we can solve these problems by allocating an infinite shadow map texture. However, we can’t do this, since video memory is limited. For real-time shadow rendering, most games employ CSM (cascade shadow map) to achieve a balance between shadow map quality and game performance. The key idea of CSM is to render a high-quality shadow map for the scene closer to the camera and decrease the shadow quality for further objects.</p>
 <p>Virtual shadow map is a possible solution to solving these problems. The key idea of Virtual-SM are:1. Only render shadow casters whose shadow can be seen by the camera. 2. Assume the video memory and shadow map texture is large enough (like virtual memory). 3. Manage the scene’s objects and dispatch draw commands on the GPU.</p>
